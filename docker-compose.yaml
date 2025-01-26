@@ -1,0 +1,292 @@
+services:
+  traefik:
+    image: "traefik:v3.2"
+    container_name: traefik
+    # https://blog.marcosalonso.dev/traefik-https-cloudflare/
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      # HTTPS always
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+      - "--entrypoints.websecure.http.tls.certResolver=letsencrypt"
+      # Set up LetsEncrypt
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.websecure.http.tls.domains[0].main=${DOMAIN}"
+      - "--entrypoints.websecure.http.tls.domains[0].sans=*.${DOMAIN}"
+      # docker provider
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+    environment:
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL?missing CLOUDFLARE_EMAIL}
+      - CLOUDFLARE_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN?missing CLOUDFLARE_DNS_API_TOKEN}
+    ports:
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/traefik/letsencrypt:/letsencrypt
+    networks:
+      - proxy
+
+  dockerproxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    container_name: dockerproxy
+    environment:
+      - CONTAINERS=1 # Allow access to viewing containers
+      - SERVICES=1 # Allow access to viewing services (necessary when using Docker Swarm)
+      - TASKS=1 # Allow access to viewing tasks (necessary when using Docker Swarm)
+      - POST=0 # Disallow any POST operations (effectively read-only)
+    ports:
+      - 127.0.0.1:2375:2375
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Mounted as read-only
+    restart: unless-stopped
+    networks:
+      - docker-proxy
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    volumes:
+      - ./data/homepage/config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.homepage.entrypoints=websecure"
+      - "traefik.http.routers.homepage.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.homepage.service=homepage"
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+    networks:
+      - proxy
+      - docker-proxy
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    network_mode: "service:gluetun"
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - PORT=5055
+    volumes:
+      - ./data/jellyseerr/config:/app/config
+    labels:
+      - "homepage.group=Media"
+      - "homepage.name=Jellyseerr"
+      - "homepage.icon=jellyseerr.png"
+      - "homepage.href=https://jellyseerr.${DOMAIN}"
+      - "homepage.description=Request shows & movies"
+      - "homepage.weight=4"
+      - "homepage.widget.type=jellyseerr"
+      - "homepage.widget.url=https://jellyseerr.${DOMAIN}"
+      - "homepage.widget.key=${API_KEY_JELLYSEERR}"
+
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    user: ${PUID}:${PGID}
+    networks:
+      - proxy
+    volumes:
+      - ./data/jellyfin/config:/config
+      - ./data/jellyfin/cache:/cache
+      - type: bind
+        source: ./library
+        target: /library
+    restart: "unless-stopped"
+    environment:
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.${DOMAIN}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.entrypoints=websecure"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.${DOMAIN}`)"
+      - "traefik.http.routers.jellyfin.service=jellyfin"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      # homepage
+      - "homepage.group=Media"
+      - "homepage.name=Jellyfin"
+      - "homepage.icon=jellyfin.png"
+      - "homepage.href=https://jellyfin.${DOMAIN}"
+      - "homepage.description=Watch shows & movies"
+      - "homepage.weight=4"
+      - "homepage.widget.type=jellyfin"
+      - "homepage.widget.url=https://jellyfin.${DOMAIN}"
+      - "homepage.widget.key=${API_KEY_JELLYFIN}"
+
+  # Gluetun VPN container (with Mullvad)
+  gluetun:
+    image: "qmcgaw/gluetun:latest"
+    container_name: gluetun
+    environment:
+      BLOCK_ADS: on
+      BLOCK_MALICIOUS: on
+      BLOCK_SURVEILLANCE: on
+      VPN_SERVICE_PROVIDER: mullvad
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${WIREGUARD_PRIVATE_KEY?missing WIREGUARD_PRIVATE_KEY}
+      WIREGUARD_ADDRESSES: "10.72.132.176/32"
+      SERVER_CITIES: ${VPN_CITY?missing VPN_CITY}
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      # Treafik
+      - "traefik.enable=true"
+      # Gluetun Built-in HTTP control server (API Endpoint)
+      - "traefik.http.routers.gluetun.entrypoints=websecure"
+      - "traefik.http.routers.gluetun.rule=Host(`gluetun.${DOMAIN}`)"
+      - "traefik.http.routers.gluetun.service=gluetun"
+      - "traefik.http.services.gluetun.loadbalancer.server.port=8000"
+      # Prowlarr
+      - "traefik.http.routers.prowlarr.entrypoints=websecure"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.${DOMAIN}`)"
+      - "traefik.http.routers.prowlarr.service=prowlarr"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+      # Radarr
+      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.${DOMAIN}`)"
+      - "traefik.http.routers.radarr.service=radarr"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+      # Sonarr
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)"
+      - "traefik.http.routers.sonarr.service=sonarr"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+      # Jellyseerr
+      - "traefik.http.routers.jellyseerr.entrypoints=websecure"
+      - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.${DOMAIN}`)"
+      - "traefik.http.routers.jellyseerr.service=jellyseerr"
+      - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
+      # qBittorrent
+      - "traefik.http.routers.qbt.entrypoints=websecure"
+      - "traefik.http.routers.qbt.rule=Host(`qbt.${DOMAIN}`)"
+      - "traefik.http.routers.qbt.service=qbt"
+      - "traefik.http.services.qbt.loadbalancer.server.port=8080"
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+      - WEBUI_PORT=8080
+    volumes:
+      - ./data/qbittorrent:/config
+      - ./library:/library
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
+    labels:
+      - "homepage.group=Downloads"
+      - "homepage.name=Qbittorrent"
+      - "homepage.icon=qbittorrent.png"
+      - "homepage.href=https://qbt.${DOMAIN}"
+      - "homepage.weight=1"
+
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=${TZ}
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    network_mode: "service:gluetun"
+    restart: unless-stopped
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    volumes:
+      - ./data/prowlarr/config:/config
+    labels:
+      - "homepage.group=Media Collectors"
+      - "homepage.name=Prowlarr"
+      - "homepage.icon=prowlarr.png"
+      - "homepage.href=https://prowlarr.${DOMAIN}"
+      - "homepage.description=Indexers management"
+      - "homepage.weight=4"
+      - "homepage.widget.type=prowlarr"
+      - "homepage.widget.url=https://prowlarr.${DOMAIN}"
+      - "homepage.widget.key=${API_KEY_PROWLARR}"
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: "service:gluetun"
+    restart: unless-stopped
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    volumes:
+      - ./data/radarr/config:/config
+      - ./library:/library
+      - ./library/downloads:/downloads
+    labels:
+      - "homepage.group=Media Collectors"
+      - "homepage.name=Radarr"
+      - "homepage.icon=radarr.png"
+      - "homepage.href=https://radarr.${DOMAIN}"
+      - "homepage.description=Movie downloader"
+      - "homepage.weight=4"
+      - "homepage.widget.type=radarr"
+      - "homepage.widget.url=https://radarr.${DOMAIN}"
+      - "homepage.widget.key=${API_KEY_RADARR}"
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    network_mode: "service:gluetun"
+    restart: unless-stopped
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    volumes:
+      - ./data/sonarr/config:/config
+      - ./library:/library
+      - ./library/downloads:/downloads
+    labels:
+      - "homepage.group=Media Collectors"
+      - "homepage.name=Sonarr"
+      - "homepage.icon=sonarr.png"
+      - "homepage.href=https://sonarr.${DOMAIN}"
+      - "homepage.description=TV downloader"
+      - "homepage.weight=4"
+      - "homepage.widget.type=sonarr"
+      - "homepage.widget.url=https://sonarr.${DOMAIN}"
+      - "homepage.widget.key=${API_KEY_SONARR}"
+
+networks:
+  proxy:
+    external: true
+  docker-proxy:
