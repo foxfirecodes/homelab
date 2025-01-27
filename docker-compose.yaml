@@ -80,6 +80,8 @@ services:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
     network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     restart: unless-stopped
     environment:
       - TZ=${TZ}
@@ -215,11 +217,15 @@ services:
       - TZ=${TZ}
     restart: unless-stopped
     network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     restart: unless-stopped
     environment:
       - PGID=${PGID}
@@ -242,6 +248,8 @@ services:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     restart: unless-stopped
     environment:
       - PGID=${PGID}
@@ -266,6 +274,8 @@ services:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
     network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     restart: unless-stopped
     environment:
       - PGID=${PGID}
