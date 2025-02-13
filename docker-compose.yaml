@@ -149,7 +149,7 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun
-    restart: unless-stopped
+    restart: always
     networks:
       - proxy
     labels:
