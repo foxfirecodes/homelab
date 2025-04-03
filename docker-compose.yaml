@@ -60,6 +60,7 @@ services:
     container_name: homepage
     volumes:
       - ./data/homepage/config:/app/config
+      - ./library:/mnt/library
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - PUID=${PUID}
