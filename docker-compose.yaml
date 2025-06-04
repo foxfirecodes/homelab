@@ -30,6 +30,7 @@ services:
       - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL?missing CLOUDFLARE_EMAIL}
       - CLOUDFLARE_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN?missing CLOUDFLARE_DNS_API_TOKEN}
     ports:
+      - "80:80"
       - "443:443"
       - "8080:8080"
     volumes:
@@ -152,6 +153,9 @@ services:
     devices:
       - /dev/net/tun
     restart: unless-stopped
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
     networks:
       - proxy
     labels:
