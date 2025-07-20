@@ -304,6 +304,15 @@ services:
       - "homepage.widget.url=https://sonarr.${DOMAIN}"
       - "homepage.widget.key=${API_KEY_SONARR}"
 
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr
+    container_name: recyclarr
+    network_mode: "service:gluetun"
+    volumes:
+      - ./data/recyclarr:/config
+    environment:
+      - TZ=America/New_York
+
 networks:
   proxy:
     external: true
