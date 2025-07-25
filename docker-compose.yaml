@@ -214,6 +214,7 @@ services:
       - "homepage.name=Qbittorrent"
       - "homepage.icon=qbittorrent.png"
       - "homepage.href=https://qbt.${DOMAIN}"
+      - "homepage.description=Torrent downloader"
       - "homepage.weight=1"
 
   flaresolverr:
@@ -325,12 +326,19 @@ services:
     env_file:
       - .env
     labels:
+      # traefik
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.glance.entrypoints=websecure"
       - "traefik.http.routers.glance.rule=Host(`glance.${DOMAIN}`)"
       - "traefik.http.routers.glance.service=glance"
       - "traefik.http.services.glance.loadbalancer.server.port=8080"
+      # homepage
+      - "homepage.group=Content"
+      - "homepage.name=Glance"
+      - "homepage.icon=glance.png"
+      - "homepage.href=https://glance.${DOMAIN}"
+      - "homepage.description=Everything at a glance"
 
   karakeep:
     image: ghcr.io/karakeep-app/karakeep:release
@@ -348,12 +356,19 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     labels:
+      # traefik
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.karakeep.entrypoints=websecure"
       - "traefik.http.routers.karakeep.rule=Host(`keep.${DOMAIN}`)"
       - "traefik.http.routers.karakeep.service=karakeep"
       - "traefik.http.services.karakeep.loadbalancer.server.port=3000"
+      # homepage
+      - "homepage.group=Content"
+      - "homepage.name=Karakeep"
+      - "homepage.icon=karakeep.png"
+      - "homepage.href=https://keep.${DOMAIN}"
+      - "homepage.description=Hoard all the data"
 
   chrome:
     image: gcr.io/zenika-hub/alpine-chrome:123
