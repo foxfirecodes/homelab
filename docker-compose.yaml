@@ -1,3 +1,5 @@
+name: homelab
+
 services:
   traefik:
     image: "traefik:v3.2"
@@ -313,7 +315,75 @@ services:
     environment:
       - TZ=America/New_York
 
+  glance:
+    image: glanceapp/glance
+    restart: unless-stopped
+    volumes:
+      - ./config/glance:/app/config
+    networks:
+      - proxy
+    env_file:
+      - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.glance.entrypoints=websecure"
+      - "traefik.http.routers.glance.rule=Host(`glance.${DOMAIN}`)"
+      - "traefik.http.routers.glance.service=glance"
+      - "traefik.http.services.glance.loadbalancer.server.port=8080"
+
+  karakeep:
+    image: ghcr.io/karakeep-app/karakeep:release
+    restart: unless-stopped
+    volumes:
+      - ./data/karakeep:/data
+    networks:
+      - proxy
+      - karakeep
+    environment:
+      - DATA_DIR=/data
+      - MEILI_ADDR=http://meilisearch:7700
+      - BROWSER_WEB_URL=http://chrome:9222
+      - NEXTAUTH_URL=https://keep.${DOMAIN}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.karakeep.entrypoints=websecure"
+      - "traefik.http.routers.karakeep.rule=Host(`keep.${DOMAIN}`)"
+      - "traefik.http.routers.karakeep.service=karakeep"
+      - "traefik.http.services.karakeep.loadbalancer.server.port=3000"
+
+  chrome:
+    image: gcr.io/zenika-hub/alpine-chrome:123
+    restart: unless-stopped
+    command:
+      - --no-sandbox
+      - --disable-gpu
+      - --disable-dev-shm-usage
+      - --remote-debugging-address=0.0.0.0
+      - --remote-debugging-port=9222
+      - --hide-scrollbars
+    networks:
+      - karakeep
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.13.3
+    restart: unless-stopped
+    environment:
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+    volumes:
+      - meilisearch:/meili_data
+    networks:
+      - karakeep
+
 networks:
   proxy:
     external: true
   docker-proxy:
+  karakeep:
+
+volumes:
+  meilisearch:

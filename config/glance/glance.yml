@@ -1,0 +1,66 @@
+hide-desktop-navigation: true
+
+theme:
+  background-color: 240 21 15
+  contrast-multiplier: 1.2
+  primary-color: 217 92 83
+  positive-color: 115 54 76
+  negative-color: 347 70 65
+
+pages:
+  - name: Home
+    columns:
+      - size: small
+        widgets:
+          - type: calendar
+            first-day-of-week: sunday
+
+          - type: rss
+            limit: 10
+            collapse-after: 3
+            cache: 12h
+            feeds:
+              - url: https://simonwillison.net/atom/everything/
+                title: Simon Willison
+              - url: https://jvns.ca/atom.xml
+                title: Julia Evans
+
+      - size: full
+        widgets:
+          - type: group
+            widgets:
+              - type: hacker-news
+              - type: lobsters
+
+          - type: videos
+            channels:
+              - UCCcRwVLEk-0ouoHIKUjKQqg # @luvstarkei
+
+      - size: small
+        widgets:
+          - type: weather
+            location: ${GLANCE_LOCATION}
+            units: metric
+            hour-format: 24h
+
+          - type: markets
+            markets:
+              - symbol: SPY
+                name: S&P 500
+              - symbol: BTC-USD
+                name: Bitcoin
+              - symbol: ETH-USD
+                name: Bitcoin
+              - symbol: PENDLE-USD
+                name: Pendle
+
+          - type: releases
+            cache: 1d
+            repositories:
+              - glanceapp/glance
+              - karakeep-app/karakeep
+              - jellyfin/jellyfin
+              - fallenbagel/jellyseerr
+              - radarr/radarr
+              - prowlarr/prowlarr
+              - sonarr/sonarr
