@@ -1,3 +1,3 @@
-# media
+# homelab
 
-> home media server setup
+> homelab & media server setup
