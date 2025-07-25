@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd "$(dirname "$0")" || exit 1
+cd "$(dirname "$0")/.." || exit 1
 
 # Check for Gluetun VPN restarts in the last 5 minutes
 if docker compose logs gluetun --since 5m | grep -q "\[vpn\] starting"; then
