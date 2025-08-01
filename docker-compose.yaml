@@ -351,6 +351,7 @@ services:
     environment:
       - DATA_DIR=/data
       - MEILI_ADDR=http://meilisearch:7700
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
       - BROWSER_WEB_URL=http://chrome:9222
       - NEXTAUTH_URL=https://keep.${DOMAIN}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
