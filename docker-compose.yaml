@@ -114,6 +114,8 @@ services:
       - type: bind
         source: ./library
         target: /library
+    devices:
+      - /dev/dri:/dev/dri
     environment:
       - JELLYFIN_PublishedServerUrl=https://jellyfin.${DOMAIN}
     labels:
