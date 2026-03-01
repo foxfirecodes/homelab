@@ -183,6 +183,11 @@ services:
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)"
       - "traefik.http.routers.sonarr.service=sonarr"
       - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+      # Cleanuparr
+      - "traefik.http.routers.cleanuparr.entrypoints=websecure"
+      - "traefik.http.routers.cleanuparr.rule=Host(`cleanuparr.${DOMAIN}`)"
+      - "traefik.http.routers.cleanuparr.service=cleanuparr"
+      - "traefik.http.services.cleanuparr.loadbalancer.server.port=11011"
       # Jellyseerr
       - "traefik.http.routers.jellyseerr.entrypoints=websecure"
       - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.${DOMAIN}`)"
@@ -310,6 +315,31 @@ services:
       - "homepage.widget.type=sonarr"
       - "homepage.widget.url=https://sonarr.${DOMAIN}"
       - "homepage.widget.key=${API_KEY_SONARR}"
+
+  cleanuparr:
+    image: ghcr.io/cleanuparr/cleanuparr:latest
+    container_name: cleanuparr
+    network_mode: "service:gluetun"
+    restart: unless-stopped
+    volumes:
+      - ./data/cleanuparr:/config
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11011/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    labels:
+      - "homepage.group=Media"
+      - "homepage.name=Cleanuparr"
+      - "homepage.icon=cleanuparr.png"
+      - "homepage.href=https://cleanuparr.${DOMAIN}"
+      - "homepage.description=Library cleaner"
+      - "homepage.weight=20"
 
   recyclarr:
     image: ghcr.io/recyclarr/recyclarr
