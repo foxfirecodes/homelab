@@ -1,2 +1,5 @@
-.env
+# env files
+.env*
+!.env.example
+
 library
