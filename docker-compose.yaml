@@ -205,6 +205,10 @@ services:
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     environment:
       - PGID=${PGID}
       - PUID=${PUID}
@@ -213,10 +217,16 @@ services:
     volumes:
       - ./data/qbittorrent:/config
       - ./library:/library
-    restart: unless-stopped
-    network_mode: "service:gluetun"
-    depends_on:
-      - gluetun
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'curl -s http://127.0.0.1:8080/api/v2/transfer/info | jq -e ''.connection_status == "connected"''',
+        ]
+      interval: 60s
+      timeout: 3s
+      retries: 5
+      start_period: 5m
     labels:
       - "homepage.group=Media"
       - "homepage.name=Qbittorrent"
