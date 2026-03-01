@@ -215,6 +215,9 @@ services:
       - PUID=${PUID}
       - TZ=${TZ}
       - WEBUI_PORT=8080
+      - DOCKER_MODS=ghcr.io/themepark-dev/theme.park:qbittorrent
+      - TP_COMMUNITY_THEME=true
+      - TP_THEME=catppuccin-frappe
     volumes:
       - ./data/qbittorrent:/config
       - ./library:/library
@@ -265,6 +268,9 @@ services:
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
+      - DOCKER_MODS=ghcr.io/themepark-dev/theme.park:prowlarr
+      - TP_COMMUNITY_THEME=true
+      - TP_THEME=catppuccin-frappe
     volumes:
       - ./data/prowlarr/config:/config
     labels:
@@ -289,6 +295,9 @@ services:
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
+      - DOCKER_MODS=ghcr.io/themepark-dev/theme.park:radarr
+      - TP_COMMUNITY_THEME=true
+      - TP_THEME=catppuccin-frappe
     volumes:
       - ./data/radarr/config:/config
       - ./library:/library
@@ -315,6 +324,9 @@ services:
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
+      - DOCKER_MODS=ghcr.io/themepark-dev/theme.park:sonarr
+      - TP_COMMUNITY_THEME=true
+      - TP_THEME=catppuccin-frappe
     volumes:
       - ./data/sonarr/config:/config
       - ./library:/library
