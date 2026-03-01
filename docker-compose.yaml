@@ -333,6 +333,8 @@ services:
     image: ghcr.io/cleanuparr/cleanuparr:latest
     container_name: cleanuparr
     network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     restart: unless-stopped
     volumes:
       - ./data/cleanuparr:/config
