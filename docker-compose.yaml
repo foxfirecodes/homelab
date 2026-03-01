@@ -445,6 +445,20 @@ services:
     networks:
       - karakeep
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    restart: unless-stopped
+    volumes:
+      - ./data/uptime-kuma:/app/data
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptime.entrypoints=websecure"
+      - "traefik.http.routers.uptime.rule=Host(`status.${DOMAIN}`)"
+      - "traefik.http.routers.uptime.service=uptime"
+      - "traefik.http.services.uptime.loadbalancer.server.port=3001"
+
 networks:
   proxy:
     external: true
