@@ -165,6 +165,7 @@ services:
       - UPDATER_PERIOD=24h
       - TZ=${TZ}
     labels:
+      - "autoheal-app=true"
       # Treafik
       - "traefik.enable=true"
       # Gluetun Built-in HTTP control server (API Endpoint)
@@ -232,6 +233,7 @@ services:
       retries: 5
       start_period: 5m
     labels:
+      - "autoheal-app=true"
       - "homepage.group=Media"
       - "homepage.name=Qbittorrent"
       - "homepage.icon=qbittorrent.png"
@@ -470,6 +472,16 @@ services:
       - "traefik.http.routers.uptime.rule=Host(`status.${DOMAIN}`)"
       - "traefik.http.routers.uptime.service=uptime"
       - "traefik.http.services.uptime.loadbalancer.server.port=3001"
+
+  autoheal:
+    image: willfarrell/autoheal:latest
+    network_mode: none
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal-app
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
   proxy:
