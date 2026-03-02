@@ -83,7 +83,9 @@ services:
     container_name: jellyseerr
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
+        restart: true
     restart: unless-stopped
     environment:
       - TZ=${TZ}
@@ -210,7 +212,9 @@ services:
     restart: unless-stopped
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
+        restart: true
     environment:
       - PGID=${PGID}
       - PUID=${PUID}
@@ -257,14 +261,18 @@ services:
     restart: unless-stopped
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
+        restart: true
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
+        restart: true
     restart: unless-stopped
     environment:
       - PGID=${PGID}
@@ -291,7 +299,9 @@ services:
     container_name: radarr
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
+        restart: true
     restart: unless-stopped
     environment:
       - PGID=${PGID}
@@ -320,7 +330,9 @@ services:
     container_name: sonarr
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
+        restart: true
     restart: unless-stopped
     environment:
       - PGID=${PGID}
@@ -349,7 +361,9 @@ services:
     container_name: cleanuparr
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
+        restart: true
     restart: unless-stopped
     volumes:
       - ./data/cleanuparr:/config
