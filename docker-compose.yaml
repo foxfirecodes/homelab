@@ -369,7 +369,7 @@ services:
       - "homepage.icon=cleanuparr.png"
       - "homepage.href=https://cleanuparr.${DOMAIN}"
       - "homepage.description=Library cleaner"
-      - "homepage.weight=20"
+      - "homepage.weight=30"
 
   recyclarr:
     image: ghcr.io/recyclarr/recyclarr
