@@ -467,6 +467,7 @@ services:
     networks:
       - proxy
     labels:
+      - "autoheal-app=true"
       - "traefik.enable=true"
       - "traefik.http.routers.uptime.entrypoints=websecure"
       - "traefik.http.routers.uptime.rule=Host(`status.${DOMAIN}`)"
