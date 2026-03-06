@@ -205,6 +205,11 @@ services:
       - "traefik.http.routers.qbt.rule=Host(`qbt.${DOMAIN}`)"
       - "traefik.http.routers.qbt.service=qbt"
       - "traefik.http.services.qbt.loadbalancer.server.port=8080"
+      # qbit_manage
+      - "traefik.http.routers.qbit_manage.entrypoints=websecure"
+      - "traefik.http.routers.qbit_manage.rule=Host(`qbtm.${DOMAIN}`)"
+      - "traefik.http.routers.qbit_manage.service=qbit_manage"
+      - "traefik.http.services.qbit_manage.loadbalancer.server.port=8081"
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -248,6 +253,30 @@ services:
       - "homepage.widget.url=https://qbt.${DOMAIN}"
       - "homepage.widget.username=${QBT_USERNAME}"
       - "homepage.widget.password=${QBT_PASSWORD}"
+
+  qbit_manage:
+    image: ghcr.io/stuffanthings/qbit_manage:latest
+    container_name: qbit_manage
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true
+      qbittorrent:
+        condition: service_started
+        restart: true
+    volumes:
+      - ./data/qbittorrent:/qbittorrent/:ro
+      - ./data/qbit_manage:/config:rw
+      - ./library:/library:rw
+    environment:
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+      - QBT_WEB_SERVER=true
+      - QBT_PORT=8081
+      - QBT_CONFIG_DIR=/config
 
   flaresolverr:
     # DockerHub mirror flaresolverr/flaresolverr:latest
