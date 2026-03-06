@@ -153,14 +153,11 @@ services:
     volumes:
       - ./data/gluetun:/gluetun
     environment:
-      - BLOCK_ADS=on
-      - BLOCK_MALICIOUS=on
-      - BLOCK_SURVEILLANCE=on
-      - VPN_SERVICE_PROVIDER=protonvpn
-      - VPN_TYPE=wireguard
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY?missing WIREGUARD_PRIVATE_KEY}
-      - SERVER_CITIES=${VPN_CITY?missing VPN_CITY}
-      - PORT_FORWARD_ONLY=on
+      - VPN_SERVICE_PROVIDER=privatevpn
+      - VPN_TYPE=openvpn
+      - OPENVPN_USER=${OPENVPN_USER?missing OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD?missing OPENVPN_PASSWORD}
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES?missing SERVER_COUNTRIES}
       - VPN_PORT_FORWARDING=on
       - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8080/api/v2/app/setPreferences'
       - VPN_PORT_FORWARDING_DOWN_COMMAND=/bin/sh -c 'wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo\"}" http://127.0.0.1:8080/api/v2/app/setPreferences'
@@ -523,6 +520,8 @@ services:
     restart: always
     environment:
       - AUTOHEAL_CONTAINER_LABEL=autoheal-app
+    profiles:
+      - autoheal
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
