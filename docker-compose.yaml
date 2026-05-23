@@ -2,7 +2,7 @@ name: homelab
 
 services:
   traefik:
-    image: "traefik:v3.2"
+    image: "traefik:v3"
     container_name: traefik
     # https://blog.marcosalonso.dev/traefik-https-cloudflare/
     command:
