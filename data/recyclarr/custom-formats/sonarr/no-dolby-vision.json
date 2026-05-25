@@ -1,0 +1,64 @@
+{
+	"trash_id": "local-no-dolby-vision",
+	"trash_scores": {
+		"default": -10000
+	},
+	"name": "No Dolby Vision",
+	"includeCustomFormatWhenRenaming": false,
+	"specifications": [
+		{
+			"name": "Dolby Vision (spelled out)",
+			"implementation": "ReleaseTitleSpecification",
+			"negate": false,
+			"required": false,
+			"fields": {
+				"value": "\\bDolby[\\s._-]*Vision\\b"
+			}
+		},
+		{
+			"name": "DoVi abbreviation",
+			"implementation": "ReleaseTitleSpecification",
+			"negate": false,
+			"required": false,
+			"fields": {
+				"value": "\\bDoVi\\b"
+			}
+		},
+		{
+			"name": "Bare DV token",
+			"implementation": "ReleaseTitleSpecification",
+			"negate": false,
+			"required": false,
+			"fields": {
+				"value": "(?i)\\bDV\\b(?![\\s._-]*(?:R|Rip|D))"
+			}
+		},
+		{
+			"name": "DV with profile or HDR",
+			"implementation": "ReleaseTitleSpecification",
+			"negate": false,
+			"required": false,
+			"fields": {
+				"value": "(?i)\\bDV[\\s._-]*(?:HDR|P5|P7|P8|Profile)\\b"
+			}
+		},
+		{
+			"name": "HDR.DV reverse order",
+			"implementation": "ReleaseTitleSpecification",
+			"negate": false,
+			"required": false,
+			"fields": {
+				"value": "(?i)\\bHDR[\\s._-]*DV\\b"
+			}
+		},
+		{
+			"name": "DV.HDR10 combo",
+			"implementation": "ReleaseTitleSpecification",
+			"negate": false,
+			"required": false,
+			"fields": {
+				"value": "(?i)\\bDV[\\s._-]*HDR10(?:\\+|Plus)?\\b"
+			}
+		}
+	]
+}

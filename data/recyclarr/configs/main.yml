@@ -1,6 +1,6 @@
 # Instance Definition: https://recyclarr.dev/wiki/yaml/config-reference/basic/
 sonarr:
-  anime-sonarr-v4:
+  sonarr-main:
     base_url: !secret sonarr_url
     api_key: !secret sonarr_apikey
 
@@ -40,6 +40,10 @@ sonarr:
           - name: SDTV
 
     custom_formats:
+      - trash_ids:
+          - local-no-dolby-vision
+        assign_scores_to:
+          - name: HD-1080p
       # Scores from TRaSH json
       - trash_ids:
           # Anime CF/Scoring
@@ -91,3 +95,14 @@ sonarr:
           - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
         assign_scores_to:
           - name: 1080p - Anime
+
+radarr:
+  radarr-main:
+    base_url: !secret radarr_url
+    api_key: !secret radarr_apikey
+
+    custom_formats:
+      - trash_ids:
+          - local-no-dolby-vision
+        assign_scores_to:
+          - name: HD-1080p

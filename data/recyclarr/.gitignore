@@ -1,0 +1,9 @@
+!*
+
+state/
+logs/
+includes/
+resources/
+repositories/
+
+secrets.yml
