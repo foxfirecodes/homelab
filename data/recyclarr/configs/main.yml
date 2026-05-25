@@ -106,3 +106,19 @@ radarr:
           - local-no-dolby-vision
         assign_scores_to:
           - name: HD-1080p
+
+    quality_definition:
+      type: movie
+      qualities:
+        - name: Bluray-1080p
+          min: 50
+          preferred: unlimited
+          max: unlimited
+        - name: WEBDL-1080p
+          min: 50
+          preferred: unlimited
+          max: unlimited
+        - name: WEBRip-1080p
+          min: 50
+          preferred: unlimited
+          max: unlimited
