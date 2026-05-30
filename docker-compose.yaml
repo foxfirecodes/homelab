@@ -1,6 +1,16 @@
 name: homelab
 
 services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - proxy
+
   traefik:
     image: "traefik:v3"
     container_name: traefik
@@ -28,13 +38,14 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=proxy"
       - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      # CF access
+      - "--entrypoints.cfhttp.address=:8070"
     environment:
       - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL?missing CLOUDFLARE_EMAIL}
       - CLOUDFLARE_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN?missing CLOUDFLARE_DNS_API_TOKEN}
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./data/traefik/letsencrypt:/letsencrypt
@@ -168,27 +179,27 @@ services:
       # Treafik
       - "traefik.enable=true"
       # Gluetun Built-in HTTP control server (API Endpoint)
-      - "traefik.http.routers.gluetun.entrypoints=websecure"
+      - "traefik.http.routers.gluetun.entrypoints=cfhttp"
       - "traefik.http.routers.gluetun.rule=Host(`gluetun.${DOMAIN}`)"
       - "traefik.http.routers.gluetun.service=gluetun"
       - "traefik.http.services.gluetun.loadbalancer.server.port=8000"
       # Prowlarr
-      - "traefik.http.routers.prowlarr.entrypoints=websecure"
+      - "traefik.http.routers.prowlarr.entrypoints=cfhttp"
       - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.${DOMAIN}`)"
       - "traefik.http.routers.prowlarr.service=prowlarr"
       - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
       # Radarr
-      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.entrypoints=cfhttp"
       - "traefik.http.routers.radarr.rule=Host(`radarr.${DOMAIN}`)"
       - "traefik.http.routers.radarr.service=radarr"
       - "traefik.http.services.radarr.loadbalancer.server.port=7878"
       # Sonarr
-      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.entrypoints=cfhttp"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)"
       - "traefik.http.routers.sonarr.service=sonarr"
       - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
       # Cleanuparr
-      - "traefik.http.routers.cleanuparr.entrypoints=websecure"
+      - "traefik.http.routers.cleanuparr.entrypoints=cfhttp"
       - "traefik.http.routers.cleanuparr.rule=Host(`cleanuparr.${DOMAIN}`)"
       - "traefik.http.routers.cleanuparr.service=cleanuparr"
       - "traefik.http.services.cleanuparr.loadbalancer.server.port=11011"
@@ -198,12 +209,12 @@ services:
       - "traefik.http.routers.jellyseerr.service=jellyseerr"
       - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
       # qBittorrent
-      - "traefik.http.routers.qbt.entrypoints=websecure"
+      - "traefik.http.routers.qbt.entrypoints=cfhttp"
       - "traefik.http.routers.qbt.rule=Host(`qbt.${DOMAIN}`)"
       - "traefik.http.routers.qbt.service=qbt"
       - "traefik.http.services.qbt.loadbalancer.server.port=8080"
       # qbit_manage
-      - "traefik.http.routers.qbit_manage.entrypoints=websecure"
+      - "traefik.http.routers.qbit_manage.entrypoints=cfhttp"
       - "traefik.http.routers.qbit_manage.rule=Host(`qbtm.${DOMAIN}`)"
       - "traefik.http.routers.qbit_manage.service=qbit_manage"
       - "traefik.http.services.qbit_manage.loadbalancer.server.port=8081"
