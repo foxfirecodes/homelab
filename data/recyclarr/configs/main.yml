@@ -122,3 +122,15 @@ radarr:
           min: 50
           preferred: unlimited
           max: unlimited
+        - name: Bluray-2160p
+          min: 100
+          preferred: unlimited
+          max: unlimited
+        - name: WEBDL-2160p
+          min: 100
+          preferred: unlimited
+          max: unlimited
+        - name: WEBRip-2160p
+          min: 100
+          preferred: unlimited
+          max: unlimited
