@@ -123,6 +123,9 @@ services:
     restart: unless-stopped
     networks:
       - proxy
+    ports:
+      - 8096:8096
+      - 7359:7359
     volumes:
       - ./data/jellyfin/config:/config
       - ./data/jellyfin/cache:/cache
