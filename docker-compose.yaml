@@ -2,7 +2,7 @@ name: homelab
 
 services:
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.8.2
     container_name: cloudflared
     restart: unless-stopped
     command: tunnel --no-autoupdate run
@@ -54,7 +54,7 @@ services:
       - proxy
 
   docker-proxy:
-    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.5.0
     environment:
       - CONTAINERS=1 # Allow access to viewing containers
       - SERVICES=0 # Allow access to viewing services (necessary when using Docker Swarm)
@@ -67,7 +67,7 @@ services:
       - docker-proxy
 
   homepage:
-    image: ghcr.io/gethomepage/homepage:latest
+    image: ghcr.io/gethomepage/homepage:v2.1.2
     container_name: homepage
     volumes:
       - ./config/homepage:/app/config
@@ -115,7 +115,7 @@ services:
       - "homepage.widget.key=${API_KEY_JELLYSEERR}"
 
   jellyfin:
-    image: jellyfin/jellyfin
+    image: jellyfin/jellyfin:10.11.11
     container_name: jellyfin
     user: ${PUID}:${PGID}
     group_add:
@@ -155,7 +155,7 @@ services:
 
   # Gluetun VPN container (with Mullvad)
   gluetun:
-    image: "qmcgaw/gluetun:latest"
+    image: "qmcgaw/gluetun:v3.41.3"
     container_name: gluetun
     restart: unless-stopped
     cap_add:
@@ -227,7 +227,7 @@ services:
       retries: 5
 
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
+    image: lscr.io/linuxserver/qbittorrent:5.2.3
     container_name: qbittorrent
     restart: unless-stopped
     network_mode: "service:gluetun"
@@ -270,7 +270,7 @@ services:
       - "homepage.widget.password=${QBT_PASSWORD}"
 
   qbit_manage:
-    image: ghcr.io/stuffanthings/qbit_manage:latest
+    image: ghcr.io/stuffanthings/qbit_manage:v4.12.0
     container_name: qbit_manage
     restart: unless-stopped
     network_mode: "service:gluetun"
@@ -295,7 +295,7 @@ services:
 
   flaresolverr:
     # DockerHub mirror flaresolverr/flaresolverr:latest
-    image: ghcr.io/flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
     container_name: flaresolverr
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
@@ -310,7 +310,7 @@ services:
         restart: true
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
+    image: lscr.io/linuxserver/prowlarr:2.5.2
     container_name: prowlarr
     network_mode: "service:gluetun"
     depends_on:
@@ -339,7 +339,7 @@ services:
       - "homepage.widget.key=${API_KEY_PROWLARR}"
 
   radarr:
-    image: lscr.io/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr:6.3.0
     container_name: radarr
     network_mode: "service:gluetun"
     depends_on:
@@ -370,7 +370,7 @@ services:
       - "homepage.widget.key=${API_KEY_RADARR}"
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
+    image: lscr.io/linuxserver/sonarr:4.0.19
     container_name: sonarr
     network_mode: "service:gluetun"
     depends_on:
@@ -401,7 +401,7 @@ services:
       - "homepage.widget.key=${API_KEY_SONARR}"
 
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:latest
+    image: ghcr.io/cleanuparr/cleanuparr:2.10.5
     container_name: cleanuparr
     network_mode: "service:gluetun"
     depends_on:
@@ -430,7 +430,7 @@ services:
       - "homepage.weight=30"
 
   recyclarr:
-    image: ghcr.io/recyclarr/recyclarr
+    image: ghcr.io/recyclarr/recyclarr:8.7.1
     container_name: recyclarr
     network_mode: "service:gluetun"
     volumes:
@@ -439,7 +439,7 @@ services:
       - TZ=America/New_York
 
   glance:
-    image: glanceapp/glance
+    image: glanceapp/glance:v0.8.5
     restart: unless-stopped
     volumes:
       - ./config/glance:/app/config
@@ -463,7 +463,7 @@ services:
       - "homepage.description=Everything at a glance"
 
   karakeep:
-    image: ghcr.io/karakeep-app/karakeep:release
+    image: ghcr.io/karakeep-app/karakeep:0.33.2
     restart: unless-stopped
     volumes:
       - ./data/karakeep:/data
@@ -494,15 +494,15 @@ services:
       - "homepage.description=Hoard all the data"
 
   chrome:
-    image: gcr.io/zenika-hub/alpine-chrome:123
+    image: ghcr.io/karakeep-app/karakeep-chrome:release
     restart: unless-stopped
+    init: true
     command:
-      - --no-sandbox
       - --disable-gpu
       - --disable-dev-shm-usage
-      - --remote-debugging-address=0.0.0.0
-      - --remote-debugging-port=9222
       - --hide-scrollbars
+      - --disable-blink-features=AutomationControlled
+      - --window-size=1440,900
     networks:
       - karakeep
 
@@ -533,7 +533,7 @@ services:
       - "traefik.http.services.uptime.loadbalancer.server.port=3001"
 
   autoheal:
-    image: willfarrell/autoheal:latest
+    image: willfarrell/autoheal:1.2.0
     network_mode: none
     restart: always
     environment:
