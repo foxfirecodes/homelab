@@ -2,7 +2,7 @@ name: homelab
 
 services:
   cloudflared:
-    image: cloudflare/cloudflared:2026.8.2
+    image: cloudflare/cloudflared:2026.8.3
     container_name: cloudflared
     restart: unless-stopped
     command: tunnel --no-autoupdate run
@@ -12,7 +12,7 @@ services:
       - proxy
 
   traefik:
-    image: "traefik:v3"
+    image: "traefik:v3.7.12"
     container_name: traefik
     # https://blog.marcosalonso.dev/traefik-https-cloudflare/
     command:
@@ -67,7 +67,7 @@ services:
       - docker-proxy
 
   homepage:
-    image: ghcr.io/gethomepage/homepage:v2.1.2
+    image: ghcr.io/gethomepage/homepage:v2.2.0
     container_name: homepage
     volumes:
       - ./config/homepage:/app/config
@@ -430,7 +430,7 @@ services:
       - "homepage.weight=30"
 
   recyclarr:
-    image: ghcr.io/recyclarr/recyclarr:8.7.1
+    image: ghcr.io/recyclarr/recyclarr:8.7.2
     container_name: recyclarr
     network_mode: "service:gluetun"
     volumes:
@@ -439,7 +439,7 @@ services:
       - TZ=America/New_York
 
   glance:
-    image: glanceapp/glance:v0.8.5
+    image: glanceapp/glance:v0.8.6
     restart: unless-stopped
     volumes:
       - ./config/glance:/app/config
@@ -507,7 +507,7 @@ services:
       - karakeep
 
   meilisearch:
-    image: getmeili/meilisearch:v1.13.3
+    image: getmeili/meilisearch:v1.53.1
     restart: unless-stopped
     environment:
       - MEILI_NO_ANALYTICS=true
@@ -518,7 +518,7 @@ services:
       - karakeep
 
   uptime-kuma:
-    image: louislam/uptime-kuma:2
+    image: louislam/uptime-kuma:2.5.3
     restart: unless-stopped
     volumes:
       - ./data/uptime-kuma:/app/data
