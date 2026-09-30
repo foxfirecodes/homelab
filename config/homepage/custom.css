@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+body {
+  font-family: "Rubik", system-font !important;
+}
+
+#widgets-wrap {
+  row-gap: 20px;
+
+  .information-widget-logo {
+    flex-grow: 1;
+    img {
+      border-radius: 2rem;
+    }
+  }
+}
+
+#page_wrapper {
+  background: var(--page-background, initial);
+  background-size: cover;
+  background-position: center;
+
+  transition: background 500ms ease-in-out;
+
+  #inner_wrapper {
+    backdrop-filter: brightness(0.3) blur(4px) saturate(0.8);
+  }
+}

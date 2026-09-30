@@ -2,9 +2,24 @@
 # For configuration options and examples, please see:
 # https://gethomepage.dev/configs/info-widgets/
 
+- logo:
+      icon: https://avatars.githubusercontent.com/u/15263431?v=4
 - resources:
-    cpu: true
-    memory: true
-    disk:
-      - /
-      - /mnt/library
+      label: System
+      cpu: true
+      memory: true
+      disk:
+          - /
+- resources:
+      label: Storage
+      disk:
+          - /mnt/library
+- greeting:
+      text_size: xl
+      text: "Welcome to my cozy burrow :3"
+- datetime:
+      text_size: xl
+      format:
+          dateStyle: short
+          timeStyle: short
+          hour12: false
